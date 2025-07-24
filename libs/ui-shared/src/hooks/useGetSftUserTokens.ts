@@ -21,16 +21,14 @@ export function useGetSftUserTokens(
         collectionId
       );
 
-      console.log('sftCollectionInfo', sftCollectionInfo.toHuman());
-
       const info = sftCollectionInfo.toHuman() as unknown as {
         nextSerialNumber: { toNumber: () => number };
       };
 
-      console.log('info', info);
+      console.log('info sft', info);
 
       const collectionTokens = info?.nextSerialNumber?.toNumber() - 1;
-
+      console.log('info sft collectionTokens', collectionTokens);
       const tokenInfo = collectionTokens
         ? await Promise.all(
             Array.from([...new Array(collectionTokens)]).map(
@@ -69,6 +67,7 @@ export function useGetSftUserTokens(
             )
           )
         : [];
+      console.log('tokenInfo sft', tokenInfo);
 
       return tokenInfo ?? null;
     },

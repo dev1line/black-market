@@ -10,6 +10,7 @@ import Sft from './Sft';
 import Assets from './Assets';
 import DropDownMenu from './DropDownMenu';
 import TransactionDetails from './TransactionDetails';
+import ConfirmModal from './ComfirmModal';
 import BatchAll from './BatchAll';
 import AssetLink from './AssetLink';
 import EvmErc20 from './EvmErc20';
@@ -87,6 +88,7 @@ export {
   AuthVerifyUser,
   Result,
   TransactionDetails,
+  ConfirmModal,
   Spinner,
   Custom,
   CustomBuilder,

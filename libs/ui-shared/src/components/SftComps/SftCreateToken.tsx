@@ -55,7 +55,8 @@ export default function SftCreateCollection() {
   const [maxIssuance, setMaxIssuance] = useState<number | null>(null);
   const [tokenOwner, setTokenOwner] = useState<string | null>(null);
   const [crossChain, setCrossChain] = useState<boolean | null>(null);
-
+  const [collectionId, setCollectionId] = useState<number>(1391716);
+  const [tokenName, setTokenName] = useState<string>('');
   const [feeAssetId, setFeeAssetId] = useState<number>(2);
 
   const [tokenOwnerError, setTokenOwnerError] = useState<string>('');
@@ -68,21 +69,23 @@ export default function SftCreateCollection() {
   const [slippage, setSlippage] = useState<string>('5');
 
   const buttonDisabled = useMemo(() => {
-    const royaltyAddressErrs = royaltyAddressInputError.some(a => a !== '');
+    // const royaltyAddressErrs = royaltyAddressInputError.some(a => a !== '');
     return (
       disable ||
-      urlInputError !== '' ||
-      royaltyAddressErrs ||
-      !collectionName ||
-      !metadataUri ||
+      //   urlInputError !== '' ||
+      //   royaltyAddressErrs ||
+      !collectionId ||
+      !tokenName ||
+      //   !metadataUri ||
       (!!initialIssuance && initialIssuance > 0 && tokenOwnerError !== '')
     );
   }, [
-    royaltyAddressInputError,
+    // royaltyAddressInputError,
     disable,
-    urlInputError,
-    collectionName,
-    metadataUri,
+    // urlInputError,
+    collectionId,
+    tokenName,
+    // metadataUri,
     initialIssuance,
     tokenOwnerError,
   ]);
@@ -93,21 +96,19 @@ export default function SftCreateCollection() {
       return;
     }
 
-    const sft = TransactionBuilder.sft(trnApi, signer, userSession.eoa);
+    const sft = TransactionBuilder.sft(
+      trnApi,
+      signer,
+      userSession.eoa,
+      collectionId
+    );
 
-    sft.createCollection({
-      collectionName,
-      metadataUri,
-      royalties,
-      collectionOwner: userSession?.eoa,
+    sft.createToken({
+      tokenName: tokenName,
+      tokenOwner: userSession?.eoa,
+      initialIssuance: initialIssuance,
+      maxIssuance: maxIssuance,
     });
-
-    // sft.createToken({
-    //   tokenName: 'Token 1',
-    //   tokenOwner: userSession?.eoa,
-    //   initialIssuance: 0,
-    //   maxIssuance: 100,
-    // });
 
     if (fromWallet === 'fpass') {
       if (feeAssetId === 2) {
@@ -151,7 +152,7 @@ export default function SftCreateCollection() {
     <div className={`card ${disable ? 'disabled' : ''}`}>
       <div className="inner">
         <CodeView code={codeString}>
-          <h3>Create Sft Collection</h3>
+          <h3>Create Sft Token</h3>
         </CodeView>
         <div className="row">
           <SendFrom
@@ -165,20 +166,35 @@ export default function SftCreateCollection() {
         </div>
         <div className="row">
           <label>
-            Collection Name
+            Collection Id
             <input
-              type="text"
-              value={collectionName}
+              type="number"
+              value={collectionId}
               className="w-full builder-input"
               onChange={e => {
                 resetState();
-                setCollectionName(e.target.value);
+                setCollectionId(Number(e.target.value));
               }}
               disabled={disable}
             />
           </label>
         </div>
         <div className="row">
+          <label>
+            Token Name
+            <input
+              type="text"
+              value={tokenName}
+              className="w-full builder-input"
+              onChange={e => {
+                resetState();
+                setTokenName(e.target.value);
+              }}
+              disabled={disable}
+            />
+          </label>
+        </div>
+        {/* <div className="row">
           <URLInput
             inputUrl={metadataUri}
             setInputUrl={setMetadataUri}
@@ -188,7 +204,7 @@ export default function SftCreateCollection() {
             resetState={resetState}
             label="Metadata URI"
           />
-        </div>
+        </div> */}
         <div className="row">
           <label>
             Initial Issuance
@@ -240,7 +256,7 @@ export default function SftCreateCollection() {
             />
           </label>
         </div>
-        <div className="row">
+        {/* <div className="row">
           <label style={{ marginBottom: 0 }}>Royalties</label>
           {royalties &&
             royalties.map((royalty, index) => {
@@ -350,9 +366,9 @@ export default function SftCreateCollection() {
               +
             </button>
           </div>
-        </div>
+        </div> */}
 
-        <div className="row">
+        {/* <div className="row">
           <label>
             Cross Chain
             <select
@@ -367,7 +383,7 @@ export default function SftCreateCollection() {
               <option value="false">No</option>
             </select>
           </label>
-        </div>
+        </div> */}
         <div className="row"></div>
         <div className="row">
           <label>
@@ -411,7 +427,7 @@ export default function SftCreateCollection() {
             }}
             disabled={buttonDisabled}
           >
-            Mint Token
+            Create Token
           </button>
         </div>
       </div>

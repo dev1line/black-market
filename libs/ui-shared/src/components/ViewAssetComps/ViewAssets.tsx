@@ -21,6 +21,8 @@ export const ViewAssets = () => {
       ),
     [userSession]
   );
+
+  console.log('walletsToUse', walletsToUse);
   const [collectionId, setCollectionId] = React.useState<string | null>(null);
 
   const collectionQueryParams = React.useMemo(
@@ -55,9 +57,8 @@ export const ViewAssets = () => {
     enabled: !!collectionId && !!userSession,
     refetchOnWindowFocus: false,
   } as any);
-
-  const codeString = ``;
-
+  console.log('collections', collections);
+  console.log('assets', assets);
   return (
     <div className="card">
       <div className="inner">
@@ -120,7 +121,8 @@ export const ViewAssets = () => {
                     key={`${collection.chainId}:${collection.name}:${i}`}
                     value={`${collection.chainId}:${collection.chainType}:${collection.location}`}
                   >
-                    {collection.chainId}: {collection.name}
+                    {collection.chainId}: {collection.name} [
+                    {collection.location}]
                   </option>
                 ))}
               </select>

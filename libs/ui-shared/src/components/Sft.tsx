@@ -7,7 +7,14 @@ import { useIsMounted } from '../hooks';
 
 import { useAuth } from '@futureverse/auth-react';
 import { useRootStore } from '../hooks/useRootStore';
-import { SftBurn, SftCreateCollection, SftMint, SftTransfer } from './SftComps';
+import {
+  SftBurn,
+  SftCreateCollection,
+  SftCreateToken,
+  SftMint,
+  SftPublicMint,
+  SftTransfer,
+} from './SftComps';
 
 export default function Sft() {
   const isMounted = useIsMounted();
@@ -34,6 +41,8 @@ export default function Sft() {
       <h1>SFT Demos</h1>
       <div className="auto-grid">
         <SftCreateCollection />
+        <SftCreateToken />
+        <SftPublicMint />
         <SftMint />
         <SftTransfer />
         <SftBurn />

@@ -1,6 +1,12 @@
-import { useAuth } from '@futureverse/auth-react';
+import { useAuth, useFutureverseSigner } from '@futureverse/auth-react';
 import { Divider } from '@futureverse/auth-ui';
-import React from 'react';
+import React, { useCallback, useState } from 'react';
+import { useLocation, useSearchParams } from 'react-router-dom';
+import ConfirmModal from '../ComfirmModal';
+import { useGetExtrinsic, useShouldShowEoa } from '../../hooks';
+import { useTrnApi } from '@futureverse/transact-react';
+import { TransactionBuilder } from '@futureverse/transact';
+import { useRootStore } from '../../hooks/useRootStore';
 
 const GameServerUrl =
   'https://seahorse-magnetic-officially.ngrok.app/api/animal-go/equip/';
@@ -75,17 +81,44 @@ const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
 };
 
 export const ViewAssetsFromGame = () => {
-  const [itemType, setItemType] = React.useState<string | null>(null);
-  const [assets, setAssets] = React.useState<any[]>([]);
-  const [isLoading, setIsLoading] = React.useState<boolean>(false);
-  const [error, setError] = React.useState<string | null>(null);
+  const { userSession } = useAuth();
+  const { resetState, setCurrentBuilder, signed, result, error } = useRootStore(
+    state => state
+  );
+  //HARDCODE
+  const [collectionId, setCollectionId] = useState<number>(1390692);
 
+  const { trnApi } = useTrnApi();
+  const signer = useFutureverseSigner();
+
+  const getExtrinsic = useGetExtrinsic();
+
+  const shouldShowEoa = useShouldShowEoa();
+
+  const [searchParams] = useSearchParams();
+  const id = searchParams.get('id');
+  const [showDialog, setShowDialog] = useState(false);
+  const [itemType, setItemType] = useState<string | null>(null);
+  const [assets, setAssets] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [fetchDataError, setFetchDataError] = useState<string | null>(null);
+  const [feeAssetId, setFeeAssetId] = useState<number>(2);
+  const [quantity, setQuantity] = useState(1);
+  const [tokenId, setTokenId] = useState<number>(0);
+  const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>(
+    shouldShowEoa ? 'eoa' : 'fpass'
+  );
+  const [mintTo, setMintTo] = useState<string>(
+    (fromWallet === 'eoa' ? userSession?.eoa : userSession?.futurepass) ?? ''
+  );
   console.log('assets', assets);
+
   const accessToken =
-    // userSession?.user?.access_token ??
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJVSURfNjg4MDhkNjhlODQwM2ZkNzYwYzkzNGEwIiwiZW1haWwiOiJzYW5nZGVwdHJhaUBleGFtcGxlLmNvbSIsInJvbGUiOiJ1c2VyIiwic2Vzc2lvbklkIjpbImI4MmM1Y2JmLTJhY2YtNDZmYi1hNDAwLThkMmNhMWUzYjFjNyIsImI4MmM1Y2JmLTJhY2YtNDZmYi1hNDAwLThkMmNhMWUzYjFjNyJdLCJqdGkiOiJkNzg3YWE2Yy01ODM3LTQ5N2YtOTNlZS0zYWJlZGU0ODg3MGEiLCJleHAiOjE3NTMyOTQxMjUsImlzcyI6IkFuaW1hbEdvQmFja0VuZCIsImF1ZCI6IkFuaW1hbEdvQ2xpZW50In0.gnk8vaenZ4NSopbf7r0pPVHvVcOKB4QIZeNrFPXobow';
+    id ??
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJVSURfNjg4MDhkNjhlODQwM2ZkNzYwYzkzNGEwIiwiZW1haWwiOiJzYW5nZGVwdHJhaUBleGFtcGxlLmNvbSIsInJvbGUiOiJ1c2VyIiwic2Vzc2lvbklkIjpbImI5NjJlZTVhLTUwMWItNGMyMi05ZmRiLWQwZWY2YzBkZDBiMiIsImI5NjJlZTVhLTUwMWItNGMyMi05ZmRiLWQwZWY2YzBkZDBiMiJdLCJqdGkiOiIxZTc5NzJlNS1mMzA2LTQ0YzQtYTJiMi1hZjJhNWQ0YTdmYjUiLCJleHAiOjE3NTMzNTgwODIsImlzcyI6IkFuaW1hbEdvQmFja0VuZCIsImF1ZCI6IkFuaW1hbEdvQ2xpZW50In0.z6AxVCGMfYT-HkrNm9GHYBhUF5CPSwiF4GnhVy_tVdE';
+
   const fetchAssets = async () => {
-    setError(null);
+    setFetchDataError(null);
     setIsLoading(true);
     try {
       if (!accessToken) {
@@ -103,7 +136,9 @@ export const ViewAssetsFromGame = () => {
       const data = await response.json();
       setAssets(data.data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch assets');
+      setFetchDataError(
+        err instanceof Error ? err.message : 'Failed to fetch assets'
+      );
     } finally {
       setIsLoading(false);
     }
@@ -112,6 +147,71 @@ export const ViewAssetsFromGame = () => {
   React.useEffect(() => {
     fetchAssets();
   }, [itemType]);
+
+  const createBuilder = useCallback(async () => {
+    if (!trnApi || !signer || !userSession) {
+      console.log('Missing trnApi, signer or userSession');
+      return;
+    }
+    console.log('userSession.oea', userSession?.eoa);
+
+    const nft = TransactionBuilder.sft(
+      trnApi,
+      signer,
+      userSession.eoa,
+      collectionId
+    ).mint({
+      walletAddress: mintTo,
+      serialNumbers: [
+        {
+          tokenId: tokenId,
+          quantity: quantity,
+        },
+      ],
+    });
+
+    if (fromWallet === 'fpass') {
+      if (feeAssetId === 2) {
+        await nft.addFuturePass(userSession.futurepass);
+      }
+
+      if (feeAssetId !== 2) {
+        await nft.addFuturePassAndFeeProxy({
+          futurePass: userSession.futurepass,
+          assetId: feeAssetId,
+          slippage: 5,
+        });
+      }
+    }
+
+    if (fromWallet === 'eoa') {
+      if (feeAssetId !== 2) {
+        await nft.addFeeProxy({
+          assetId: feeAssetId,
+          slippage: 5,
+        });
+      }
+    }
+
+    getExtrinsic(nft);
+    setCurrentBuilder(nft);
+  }, [
+    trnApi,
+    signer,
+    userSession,
+    collectionId,
+    tokenId,
+    quantity,
+    fromWallet,
+    getExtrinsic,
+    setCurrentBuilder,
+    feeAssetId,
+  ]);
+
+  const handleMint = () => {
+    createBuilder();
+    // setShowDialog(true);
+  };
 
   return (
     <div className="card">
@@ -180,13 +280,15 @@ export const ViewAssetsFromGame = () => {
                         <StatsDisplay stats={asset.stats} />
                       </div>
                       <div className="button-row">
-                        <a
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
                           className="btn green"
+                          onClick={() => {
+                            setShowDialog(true);
+                            setTokenId(asset.characterName);
+                          }}
                         >
                           Mint to NFT
-                        </a>
+                        </button>
                       </div>
                     </div>
                     <hr style={{ borderWidth: '1px' }} />
@@ -240,9 +342,20 @@ export const ViewAssetsFromGame = () => {
               ))}
           </div>
         )}
+        {showDialog && (
+          <ConfirmModal
+            showDialog={showDialog}
+            setShowDialog={setShowDialog}
+            setTokenId={setTokenId}
+            tokenId={tokenId}
+            quantity={quantity}
+            setQuantity={setQuantity}
+            callback={handleMint}
+          />
+        )}
         <div className="row">
           {isLoading && <span>Loading More Assets...</span>}
-          {error && <div>Error loading assets</div>}
+          {fetchDataError && <div>Error loading assets</div>}
         </div>
       </div>
     </div>

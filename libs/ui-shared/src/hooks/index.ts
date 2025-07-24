@@ -6,6 +6,7 @@ export { useTransactQuery } from './useTransactQuery';
 export { useGetTokens } from './useGetTokens';
 export { useGetSftUserTokens } from './useGetSftUserTokens';
 export { useGetNftPublicMint } from './useGetNftPublicMint';
+export { useGetSftPublicMint } from './useGetSftPublicMint';
 export { useIsMobile } from './useIsMobile';
 export { useShouldShowEoa } from './useShouldShowEoa';
 export { useCopyToClipboard } from './useCopyToClipboard';

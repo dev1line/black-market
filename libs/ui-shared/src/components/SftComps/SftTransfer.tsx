@@ -377,6 +377,7 @@ export default function NftTransfer() {
     fromWallet === 'eoa' ? userSession?.eoa : userSession?.futurepass
   );
 
+  console.log('collectionTokens SFT Transfer', collectionTokens);
   const buttonDisabled = useMemo(() => {
     return (
       disable || addressInputError !== '' || collectionTokens?.length === 0
@@ -499,7 +500,7 @@ export default function NftTransfer() {
               Token ID
               <select
                 className="w-full builder-input"
-                disabled={isPending}
+                // disabled={isPending}
                 value={token[0]}
                 style={{ marginTop: '4px' }}
                 onChange={e => {
@@ -511,12 +512,17 @@ export default function NftTransfer() {
                 }}
               >
                 {isPending && <option value="">Tokens Loading</option>}
-                {collectionTokens &&
+                {/* {collectionTokens &&
                   collectionTokens.map((token, index) => (
                     <option key={index} value={token.id}>
                       {token.tokenName}
                     </option>
-                  ))}
+                  ))} */}
+                {Array.from({ length: 10 }).map((_, index) => (
+                  <option key={index} value={index}>
+                    {index}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
@@ -565,12 +571,12 @@ export default function NftTransfer() {
             style={{ marginTop: '8px', cursor: 'pointer' }}
             className="w-full builder-input green"
             onClick={() => {
-              if (
-                collectionTokens &&
-                tokenQty.length < collectionTokens?.length
-              ) {
-                setTokenQty([...tokenQty, [0, 1]]);
-              }
+              // if (
+              //   collectionTokens &&
+              //   tokenQty.length < collectionTokens?.length
+              // ) {
+              setTokenQty([...tokenQty, [0, 1]]);
+              // }
             }}
           >
             +

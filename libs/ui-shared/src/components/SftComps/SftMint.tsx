@@ -471,12 +471,11 @@ export default function SftMint() {
                 }}
               >
                 {/* {isPending && <option value="">Tokens Loading</option>} */}
-                {collectionTokens &&
-                  collectionTokens.map((token, index) => (
-                    <option key={index} value={token.id}>
-                      {token.tokenName}
-                    </option>
-                  ))}
+                {Array.from({ length: 100 }).map((_, index) => (
+                  <option key={index} value={index}>
+                    {index}
+                  </option>
+                ))}
               </select>
             </label>
             <label>
