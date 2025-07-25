@@ -7,6 +7,7 @@ import { useGetExtrinsic, useShouldShowEoa } from '../../hooks';
 import { useTrnApi } from '@futureverse/transact-react';
 import { TransactionBuilder } from '@futureverse/transact';
 import { useRootStore } from '../../hooks/useRootStore';
+import { TokenDecryption } from './decryption';
 
 const GameServerUrl =
   'https://seahorse-magnetic-officially.ngrok.app/api/animal-go/equip/';
@@ -86,7 +87,7 @@ export const ViewAssetsFromGame = () => {
     state => state
   );
   //HARDCODE
-  const [collectionId, setCollectionId] = useState<number>(1390692);
+  const [collectionId, setCollectionId] = useState<number>(1392740);
 
   const { trnApi } = useTrnApi();
   const signer = useFutureverseSigner();
@@ -96,7 +97,38 @@ export const ViewAssetsFromGame = () => {
   const shouldShowEoa = useShouldShowEoa();
 
   const [searchParams] = useSearchParams();
-  const id = searchParams.get('id');
+  const encryptedAesKey = searchParams.get('encryptedAesKey');
+  const iv = searchParams.get('iv');
+  const encryptedData = searchParams.get('encryptedData');
+  const privateKeyPem = `-----BEGIN RSA PRIVATE KEY-----
+MIIEpQIBAAKCAQEAi5Zxl4ZANumBXGNlMaJVmAC7UgMMXrB0vn00sxBeTov/RQ5A
+27zo9nXY3ZrPehgRCWeyuc46FFiy/qhZNz2Te6NyuYm2LNdXUPvW9ymUOF65rFkS
+fr1H2kQFoN3btin9owr8Jcq38dnKhK0N1drqG2NZCgMLv1X9sTuu3bodZPXGFzF0
+5fXAbCyf7w4AwbnVuhz4QuLeN4yy9Xy0gOAmPVOWBBFrGMrOWaopKxRUg/XbVnl1
+CTzuOiEMGMTihcLqkMiTToGK1kXcTwS3+LUMaUyjUj+U7mf/xfdXAa5Mk9gFNkgm
+cgnSA6vQWI1TvEbnMt35vWIyC+WdBnScgNQVyQIDAQABAoIBAQCKpfxeTXMrF/Tu
+F6xECMKMIO3vICgBRbQwIZ1e3ztNObFsniO+H34mkBfAxiyfUZhahy33cOgvnYrt
+d7pmLDt563fg4vCYyaxpPDzhc+NNuokir7a3PLtKCZatmrDJ2Bue/yJFR34+M938
+uwerC67NVXjzgOMCQh+jE201v8/CnwWDSkagOeN6I2XtyJsN8ZW4gOYDfQoDfl/1
+ilefcQLTibvb46xU30rP33XwlLuLzggrxA95PJTeGjS9uLEup1+HibdMFYECQ0KH
+rebNInBq13//Jloq+yca5YqBOrn3I7BNbdWkcSjpQbJZI/iKZN3VbXR7J8apNo2T
+gAb2tlwBAoGBAL0kZHJ7pKZ4n6vhcaX46uqJFis+kRh6DfpbHGCmwUjrTCusL28l
+Xlvp/H8s1BL4ImV7KHnJDps42Ez4Sm6zgFeWKprCz5pMpVrLmBAzVqvNEOTFZhCe
+QIdAgeXZn9E3xljKqNcvIUxlvlFKr3KYQH9QF7vjB6STsFWREVe7Pf65AoGBALzt
+1K2uLTiUKiIjo66KNrHkdJMsg847jwEjIRH3GAdNo07jEa20ZH0Sy7/j2DKRi7aQ
+vJDsIc9kZAMldZSLJ87KggmzYVjtR4PEW9Re/Sv8gUtAByFkzaQKNPTrwZwKX5rs
+bpBomoItmdOkalDVokOKAmNSJC4zee6quVY83ceRAoGBAJCl7EvBU0Icrb/9QbT0
+kHOdM18PElftwBLe6uzfmqHxkOc1X3FY2rjgUUHRPr7jFSsW7PV2Vb1P09vJZuMS
+U+yn4x1ILwyJ4Ut2uGxrVrU8tta+QDglTqQhKTZnIFoYlZACLO2kFYsfpFT3EQZK
+ecjjr8L49Tdf21MVBnZZtCfBAoGAQGj41AmIozxoLOFnoU6/nOBdGfvYJ8xIUcPv
+N1e9WmgOoAtr8IOKqtVon1AHWh4iuqgXkXTfhfwc2LHBp1XVyXti3/nG23Fxqyub
+fwivWXqpfcUjaTAbp6xPJ5zkkdU7iO7INvVij7UKN4xbLpnWyx3W+JN9gD7OeB6+
+NvdjSPECgYEAoouRtOPXzj4ovvXMQPaDJeCiHROKCf2zePgBQo9KME3jjP2JKwEk
+j2gEupgSnbtxPPI35D7ALyIjBqH6kcHLBlNHDL8gA4sTB7GOQ3UZ2v3LN22winM4
+bWkDxTtdPZZeJY3vbQeV14A93a9Ws+5qEJHN2Vgq24qX7Dxi988hx3c=
+-----END RSA PRIVATE KEY-----`;
+  const decoder = new TokenDecryption(privateKeyPem);
+
   const [showDialog, setShowDialog] = useState(false);
   const [itemType, setItemType] = useState<string | null>(null);
   const [assets, setAssets] = useState<any[]>([]);
@@ -113,13 +145,15 @@ export const ViewAssetsFromGame = () => {
   );
   console.log('assets', assets);
 
-  const accessToken =
-    id ??
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiJVSURfNjg4MDhkNjhlODQwM2ZkNzYwYzkzNGEwIiwiZW1haWwiOiJzYW5nZGVwdHJhaUBleGFtcGxlLmNvbSIsInJvbGUiOiJ1c2VyIiwic2Vzc2lvbklkIjpbImI5NjJlZTVhLTUwMWItNGMyMi05ZmRiLWQwZWY2YzBkZDBiMiIsImI5NjJlZTVhLTUwMWItNGMyMi05ZmRiLWQwZWY2YzBkZDBiMiJdLCJqdGkiOiIxZTc5NzJlNS1mMzA2LTQ0YzQtYTJiMi1hZjJhNWQ0YTdmYjUiLCJleHAiOjE3NTMzNTgwODIsImlzcyI6IkFuaW1hbEdvQmFja0VuZCIsImF1ZCI6IkFuaW1hbEdvQ2xpZW50In0.z6AxVCGMfYT-HkrNm9GHYBhUF5CPSwiF4GnhVy_tVdE';
-
   const fetchAssets = async () => {
     setFetchDataError(null);
     setIsLoading(true);
+    const { accessToken } = await decoder.decryptTokenResponse({
+      encryptedAesKey: encryptedAesKey ?? '',
+      iv: iv ?? '',
+      encryptedData: encryptedData ?? '',
+    });
+    console.log('accessToken', accessToken);
     try {
       if (!accessToken) {
         throw new Error('No authentication token available');
@@ -208,8 +242,35 @@ export const ViewAssetsFromGame = () => {
     feeAssetId,
   ]);
 
+  const createNftSIgnByAdmin = async () => {
+    console.log('collectionId', collectionId);
+    console.log('tokenId', tokenId);
+    console.log('quantity', quantity);
+    console.log('feeAssetId', feeAssetId);
+    // call api POST to server localhost: 8080/api/animal-go/nft/mintSft
+    const response = await fetch(
+      'http://localhost:8080/api/animal-go/nft/mint-sft',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          collectionId: collectionId,
+          mintTo: mintTo,
+          tokenId: tokenId,
+          quantity: quantity,
+          gasToken: feeAssetId,
+        }),
+      }
+    );
+    const data = await response.json();
+    console.log('data', data);
+  };
+
   const handleMint = () => {
-    createBuilder();
+    createNftSIgnByAdmin();
+    // createBuilder();
     // setShowDialog(true);
   };
 
