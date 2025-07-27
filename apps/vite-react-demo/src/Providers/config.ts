@@ -1,9 +1,13 @@
-import { createWagmiConfig } from '@futureverse/wagmi-connectors';
+import {
+  createWagmiConfig,
+  porcini,
+  root,
+} from '@futureverse/wagmi-connectors';
 import { FutureverseAuthClient } from '@futureverse/auth-react/auth';
 import { polygonAmoy, sepolia, mainnet } from 'viem/chains';
 import { QueryClient } from '@tanstack/react-query';
 import { cookieStorage, createStorage } from 'wagmi';
-import { porcini, root } from '@futureverse/auth';
+// import { porcini, root } from '@futureverse/auth';
 
 const clientId = import.meta.env.VITE_CLIENT_ID;
 const walletConnectProjectId = import.meta.env.VITE_WALLET_CONNECT;
@@ -12,9 +16,13 @@ const environment = import.meta.env.VITE_ENVIRONMENT || 'development';
 
 export const authClient = new FutureverseAuthClient({
   clientId,
-  environment: environment, //'production' //'staging' //'development',
+  authorizationURL: 'https://login.passonline.cloud',
+  signerURL: 'https://signer.passonline.cloud',
+  hostWeb3SigningDomain: 'localhost',
+  // environment: environment, //'production' //'staging' //'development',
+
   redirectUri:
-    typeof window !== 'undefined' ? `${window.location.origin}/login` : '',
+    typeof window !== 'undefined' ? `http://localhost:4200/login` : '',
   signInFlow: 'redirect',
 });
 export const queryClient = new QueryClient();
