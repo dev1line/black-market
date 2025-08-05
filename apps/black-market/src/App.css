@@ -1,0 +1,99 @@
+@import url('../../../libs/ui-shared/src/styles.css');
+
+/* Responsive Welcome styles */
+.welcome-responsive {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem 0 1rem;
+  box-sizing: border-box;
+}
+
+.welcome-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: transparent;
+  box-shadow: none;
+  margin: 0 auto;
+  z-index: 1;
+  width: 100%;
+  max-width: 500px;
+}
+
+.welcome-main-img {
+  width: 100%;
+  max-width: 400px;
+  height: auto;
+  margin-bottom: 2rem;
+}
+
+.welcome-btn-wrap {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}
+
+.welcome-btn-img {
+  width: 60%;
+  max-width: 200px;
+  min-width: 120px;
+  height: auto;
+  cursor: pointer;
+  margin: 0 auto;
+  display: block;
+}
+
+.welcome-footer {
+  position: relative;
+  width: 100%;
+  margin-top: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.welcome-footer-img {
+  max-width: 300px;
+  width: 60vw;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  z-index: 2;
+}
+
+@media (max-width: 768px) {
+  .welcome-card {
+    max-width: 95vw;
+  }
+  .welcome-main-img {
+    max-width: 80vw;
+  }
+  .welcome-btn-img {
+    max-width: 60vw;
+  }
+  .welcome-footer-img {
+    max-width: 180px;
+    width: 40vw;
+  }
+}
+
+@media (max-width: 480px) {
+  .welcome-responsive {
+    padding: 1rem 0.5rem 0 0.5rem;
+  }
+  .welcome-main-img {
+    max-width: 95vw;
+    margin-bottom: 1rem;
+  }
+  .welcome-btn-img {
+    max-width: 80vw;
+    min-width: 80px;
+  }
+  .welcome-footer-img {
+    max-width: 120px;
+    width: 30vw;
+  }
+}
