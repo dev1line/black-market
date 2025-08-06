@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npx nx build black-market",
+  "buildCommand": "yarn build",
   "outputDirectory": "dist/apps/black-market",
   "installCommand": "yarn install",
   "framework": "vite",
