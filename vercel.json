@@ -1,7 +1,8 @@
 {
-  "buildCommand": "yarn build",
+  "buildCommand": "npx nx build black-market",
   "outputDirectory": "dist/apps/black-market",
   "installCommand": "yarn install",
+  "framework": "vite",
   "routes": [
     {
       "src": "/(.*)",

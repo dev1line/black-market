@@ -29,7 +29,7 @@ export default defineConfig({
   define: {
     'process.env': {},
   },
-  base: './',
+  base: process.env.NODE_ENV === 'production' ? '/black-market/' : './',
   build: {
     outDir: '../../dist/apps/black-market',
     emptyOutDir: true,

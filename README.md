@@ -91,9 +91,32 @@ npm run build
 npx nx build black-market
 ```
 
-## Deployment to Vercel
+**Preview production build:**
 
-### Prerequisites for Vercel Deployment
+```bash
+npm run preview
+# or
+npx nx preview black-market
+```
+
+## Deployment
+
+### GitHub Pages Deployment
+
+This project is configured for automatic deployment to GitHub Pages. See [GITHUB_PAGES_DEPLOYMENT.md](./GITHUB_PAGES_DEPLOYMENT.md) for detailed instructions.
+
+**Quick Setup:**
+
+1. Push code to `main` or `master` branch
+2. Go to repository Settings > Pages
+3. Select "GitHub Actions" as source
+4. GitHub Actions will automatically build and deploy
+
+**URL Format:** `https://[username].github.io/black-market/`
+
+### Vercel Deployment
+
+#### Prerequisites for Vercel Deployment
 
 1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com)
 2. **Vercel CLI** (optional): `npm i -g vercel`
