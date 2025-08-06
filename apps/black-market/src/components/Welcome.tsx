@@ -4,8 +4,10 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { TokenDecryption } from '../crypto/decryption';
 import { useEffect } from 'react';
 
-const privateKeyPem = import.meta.env.VITE_PRIVATE_KEY;
-const formattedPrivateKey = privateKeyPem.replace(/\\n/g, '\n');
+const privateKeyPem = import.meta.env.VITE_PRIVATE_KEY || '';
+const formattedPrivateKey = privateKeyPem
+  ? privateKeyPem.replace(/\\n/g, '\n')
+  : '';
 const Welcome = () => {
   const { openLogin } = useAuthUi();
   const { userSession } = useAuth();
@@ -15,20 +17,33 @@ const Welcome = () => {
   const encryptedAesKey = searchParams.get('encryptedAesKey');
   const iv = searchParams.get('iv');
   const encryptedData = searchParams.get('encryptedData');
-  const decoder = new TokenDecryption(formattedPrivateKey);
+
+  // Only create decoder if private key is available
+  const decoder = formattedPrivateKey
+    ? new TokenDecryption(formattedPrivateKey)
+    : null;
 
   useEffect(() => {
     const calcAccessToken = async () => {
-      const { accessToken, refreshToken } = await decoder.decryptTokenResponse({
-        encryptedAesKey: encryptedAesKey ?? '',
-        iv: iv ?? '',
-        encryptedData: encryptedData ?? '',
-      });
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
+      if (!decoder || !encryptedAesKey || !iv || !encryptedData) {
+        return;
+      }
+
+      try {
+        const { accessToken, refreshToken } =
+          await decoder.decryptTokenResponse({
+            encryptedAesKey: encryptedAesKey,
+            iv: iv,
+            encryptedData: encryptedData,
+          });
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('refreshToken', refreshToken);
+      } catch (error) {
+        console.error('Failed to decrypt token response:', error);
+      }
     };
     calcAccessToken();
-  }, []);
+  }, [decoder, encryptedAesKey, iv, encryptedData]);
 
   return (
     <>

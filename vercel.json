@@ -1,7 +1,7 @@
 {
-  "buildCommand": "npx nx build black-market",
+  "buildCommand": "yarn build",
   "outputDirectory": "dist/apps/black-market",
-  "installCommand": "npm install",
+  "installCommand": "yarn install",
   "framework": "vite",
   "rewrites": [
     {

@@ -3,8 +3,8 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "vite": "npx nx serve black-market",
-    "build": "npx nx build black-market"
+    "start": "npx nx serve black-market",
+    "build": "npx nx build black-market --output-path dist/apps/black-market"
   },
   "private": true,
   "dependencies": {

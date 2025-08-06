@@ -5,7 +5,7 @@ import { QueryClient } from '@tanstack/react-query';
 import { cookieStorage, createStorage } from 'wagmi';
 import { porcini, root } from '@futureverse/auth';
 
-const clientId = import.meta.env.VITE_CLIENT_ID;
+const clientId = import.meta.env.VITE_CLIENT_ID || '';
 // const walletConnectProjectId = import.meta.env.VITE_WALLET_CONNECT;
 // const xamanAPIKey = import.meta.env.VITE_XAMAN_API;
 const environment = import.meta.env.VITE_ENVIRONMENT || 'development';

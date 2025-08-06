@@ -7,22 +7,23 @@ import { useAuth } from '@futureverse/auth-react';
 import { useRootStore } from '../../../../libs/ui-shared/src/hooks/useRootStore';
 import { useEffect } from 'react';
 
-const characerCollectionId = import.meta.env.VITE_COLLECTION_CHARACTER_ID;
-const equipmentCollectionId = import.meta.env.VITE_COLLECTION_EQUIPMENT_ID;
-const stoneCollectionId = import.meta.env.VITE_COLLECTION_STONE_ID;
+const characerCollectionId = import.meta.env.VITE_COLLECTION_CHARACTER_ID || '';
+const equipmentCollectionId =
+  import.meta.env.VITE_COLLECTION_EQUIPMENT_ID || '';
+const stoneCollectionId = import.meta.env.VITE_COLLECTION_STONE_ID || '';
 const assetControlled = [
   characerCollectionId,
   equipmentCollectionId,
   stoneCollectionId,
-];
+].filter(Boolean); // Filter out empty values
 
 export default function BlackMarket() {
   const isMounted = useIsMounted();
   const { userSession } = useAuth();
   const { gas, resetState } = useRootStore(state => state);
-  const publicKey = import.meta.env.VITE_PUBLIC_KEY;
-  const formattedPublicKey = publicKey.replace(/\\n/g, '\n');
-  const GameServerUrl = import.meta.env.VITE_GAME_SERVER_URL;
+  const publicKey = import.meta.env.VITE_PUBLIC_KEY || '';
+  const formattedPublicKey = publicKey ? publicKey.replace(/\\n/g, '\n') : '';
+  const GameServerUrl = import.meta.env.VITE_GAME_SERVER_URL || '';
   useEffect(() => {
     return () => {
       resetState();
