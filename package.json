@@ -4,7 +4,7 @@
   "license": "MIT",
   "scripts": {
     "start": "npx nx serve black-market",
-    "build": "npx nx build black-market --output-path dist/apps/black-market"
+    "build": "npx nx build black-market --output dist/apps/black-market"
   },
   "private": true,
   "dependencies": {
