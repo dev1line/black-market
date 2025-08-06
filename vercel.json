@@ -1,5 +1,4 @@
 {
-  "rootDirectory": ".",
   "buildCommand": "yarn build && ls -R dist",
   "outputDirectory": "dist/apps/black-market",
   "installCommand": "yarn install",
