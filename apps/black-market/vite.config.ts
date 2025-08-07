@@ -27,11 +27,9 @@ export default defineConfig({
     'process.env': {},
   },
 
-  base: '/black-market/',
-
   build: {
     // ⚠️ Quan trọng: build ra thư mục dist ở ROOT
-    outDir: path.resolve(__dirname, '../../dist'),
+    outDir: path.resolve(__dirname, '../../dist/apps/black-market'),
 
     emptyOutDir: true,
     reportCompressedSize: true,
