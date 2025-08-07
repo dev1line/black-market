@@ -27,7 +27,7 @@ export default defineConfig({
     'process.env': {},
   },
 
-  base: './',
+  base: '/black-market/',
 
   build: {
     // ⚠️ Quan trọng: build ra thư mục dist ở ROOT
