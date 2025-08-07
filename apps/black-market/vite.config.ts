@@ -2,6 +2,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
+import path from 'path';
 
 export default defineConfig({
   root: __dirname,
@@ -22,16 +23,12 @@ export default defineConfig({
 
   plugins: [react(), nxViteTsPaths()],
 
-  // Uncomment this if you are using workers.
-  // worker: {
-  //  plugins: [ nxViteTsPaths() ],
-  // },
   define: {
     'process.env': {},
   },
-  base: process.env.NODE_ENV === 'production' ? '/black-market/' : './',
+  base: './',
   build: {
-    outDir: '../../dist/apps/black-market',
+    outDir: path.resolve(__dirname, '../../dist/apps/black-market'),
     emptyOutDir: true,
     reportCompressedSize: true,
     sourcemap: true,
