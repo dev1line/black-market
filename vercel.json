@@ -1,6 +1,6 @@
 {
   "buildCommand": "yarn build",
-  "outputDirectory": "dist/apps/black-market",
+  "outputDirectory": "dist",
   "installCommand": "yarn install",
   "framework": "vite",
   "routes": [
