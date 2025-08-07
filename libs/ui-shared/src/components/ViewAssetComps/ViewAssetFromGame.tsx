@@ -87,8 +87,6 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
   const [quantity, setQuantity] = useState(1);
   const [tokenId, setTokenId] = useState<number>(0);
 
-  console.log('assets', assets);
-
   const refreshAccessToken = async (refreshToken: string) => {
     try {
       const response = await fetch(
@@ -132,10 +130,9 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
           },
         }
       );
-      console.log('refresh Token', refreshToken, response);
+
       // Nếu accessToken hết hạn, thử refresh
       if (response.status === 400 && refreshToken) {
-        console.log('call inn');
         try {
           accessToken = await refreshAccessToken(refreshToken);
           // Thử lại với accessToken mới
@@ -179,29 +176,22 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
       amount: itemType === 'stone' ? quantity : 1,
       walletAddress: mintTo,
     };
-    console.log('mint To', mintTo);
     const encryptionResponse = await encoder.encryptTokenResponse(dataSending);
-    console.log('encryption', dataSending, encryptionResponse);
 
     const accessToken = localStorage.getItem('accessToken');
     // call api POST to server localhost: 8080/api/animal-go/nft/mintSft
-    const response = await fetch(
-      `${gameServerUrl}/api/animal-go/crypto/admin-mint`,
-      {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          encryptedAesKey: encryptionResponse.EncryptedAesKey,
-          iv: encryptionResponse.IV,
-          encryptedData: encryptionResponse.EncryptedData,
-        }),
-      }
-    );
-    const data = await response.json();
-    console.log('data', data);
+    await fetch(`${gameServerUrl}/api/animal-go/crypto/admin-mint`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        encryptedAesKey: encryptionResponse.EncryptedAesKey,
+        iv: encryptionResponse.IV,
+        encryptedData: encryptionResponse.EncryptedData,
+      }),
+    });
   };
 
   const handleMint = async () => {

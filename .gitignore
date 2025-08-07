@@ -46,3 +46,4 @@ out
 .nx/workspace-data
 
 .env
+.vercel

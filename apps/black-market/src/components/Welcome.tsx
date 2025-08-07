@@ -47,7 +47,16 @@ const Welcome = () => {
 
   return (
     <>
-      <div id="welcome" className="welcome-responsive">
+      <div
+        id="welcome"
+        className="welcome-responsive"
+        style={{
+          backgroundImage: "url('/images/black-market/Background.png')",
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
         <div className="card welcome-card">
           <img
             src="/images/black-market/AnimalGoIcon.png"
