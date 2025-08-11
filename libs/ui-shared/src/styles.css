@@ -2206,7 +2206,7 @@ button.fvaui-button-secondary:hover .fvaui-iconWrapper {
   height: 200px;
   border-radius: 8px;
   overflow: hidden;
-  background-image: url('public/images/black-market/BG.png');
+  background-image: url('/images/black-market/BG.png');
   display: flex;
   align-items: center;
   justify-content: center;

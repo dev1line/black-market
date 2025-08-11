@@ -7,9 +7,10 @@ import React, { useCallback, useState, useEffect } from 'react';
 import ConfirmModal from '../ComfirmModal';
 import { useTrnApi } from '@futureverse/transact-react';
 import { ExtrinsicResult, TransactionBuilder } from '@futureverse/transact';
-import { useGetExtrinsic, useShouldShowEoa } from '../../hooks';
+import { useGetExtrinsic } from '../../hooks';
 import { useRootStore } from '../../hooks/useRootStore';
 import { TokenEncryption } from '../../crypto/encryption';
+import { fetchWithTokenRefresh } from '../../helpers';
 
 interface StatsDisplayProps {
   stats: {
@@ -52,22 +53,23 @@ export const ViewAssets = ({
   const { setCurrentBuilder, setResultCallback } = useRootStore(state => state);
   // Create an array of non-null wallet addresses
   const [walletsToUse, setWalletToUse] = useState<string[]>([]);
+  const [feeAssetId, setFeeAssetId] = useState<number>(1);
   const { trnApi } = useTrnApi();
   const signer = useFutureverseSigner();
 
   const getExtrinsic = useGetExtrinsic();
 
-  const shouldShowEoa = useShouldShowEoa();
+  // const shouldShowEoa = useShouldShowEoa();
 
   // Initialize wallet based on userSession and shouldShowEoa
   useEffect(() => {
     if (userSession) {
-      const initialWallet = shouldShowEoa
-        ? userSession.eoa
-        : userSession.futurepass;
-      setWalletToUse(initialWallet ? [initialWallet] : []);
+      // const initialWallet = shouldShowEoa
+      //   ? userSession.eoa
+      //   : userSession.futurepass;
+      setWalletToUse(userSession.futurepass ? [userSession.futurepass] : []);
     }
-  }, [userSession, shouldShowEoa]);
+  }, [userSession]);
 
   const [collectionId, setCollectionId] = useState<string | null>(null);
   const [showDialog, setShowDialog] = useState(false);
@@ -75,11 +77,8 @@ export const ViewAssets = ({
   const [quantity, setQuantity] = useState(1);
   const [tokenId, setTokenId] = useState<number>(0);
   const [validMintedAssets, setValidMintedAssets] = useState<string[]>([]);
-  const feeAssetId = 2;
 
-  const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>(
-    shouldShowEoa ? 'eoa' : 'fpass'
-  );
+  const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>('fpass');
 
   // Custom checkbox styles
   const checkboxStyles = {
@@ -170,10 +169,10 @@ export const ViewAssets = ({
 
     const nft =
       selectedItem?.assetType === 'ERC1155'
-        ? TransactionBuilder.sft(
+        ? await TransactionBuilder.sft(
             trnApi,
             signer,
-            fromWallet === 'fpass' ? userSession.futurepass : userSession.eoa,
+            userSession.eoa,
             collectionLocation
           ).burn({
             serialNumbers: [
@@ -183,16 +182,17 @@ export const ViewAssets = ({
               },
             ],
           })
-        : TransactionBuilder.nft(
+        : await TransactionBuilder.nft(
             trnApi,
             signer,
-            fromWallet === 'fpass' ? userSession.futurepass : userSession.eoa,
+            userSession.eoa,
             collectionLocation
           ).burn({
             serialNumber: Number(selectedItem?.tokenId) ?? 0,
           });
-
+    console.log('nft', nft);
     if (fromWallet === 'fpass') {
+      console.log(' fpass feeAssetId', feeAssetId);
       if (feeAssetId === 2) {
         await nft.addFuturePass(userSession.futurepass);
       }
@@ -216,7 +216,11 @@ export const ViewAssets = ({
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const callBackHandler = async (_: ExtrinsicResult) => {
+    const callBackHandler = async (result: ExtrinsicResult) => {
+      if (result.result.isError) {
+        console.log('result.result.isError', result.result.isError);
+        return;
+      }
       const mintId = selectedItem?.metadata?.attributes?.mintId;
       const entityType = selectedItem?.metadata?.attributes?.entityType;
 
@@ -231,21 +235,20 @@ export const ViewAssets = ({
       };
 
       const encryptionResponse = await encoder.encryptTokenResponse(burnData);
-      const accessToken = localStorage.getItem('accessToken');
 
       // call api POST to server localhost: 8080/api/animal-go/nft/mintSft
-      await fetch(`${gameServerUrl}/api/animal-go/crypto/burn`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
+      await fetchWithTokenRefresh(
+        `${gameServerUrl}/api/animal-go/crypto/burn`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            encryptedAesKey: encryptionResponse.EncryptedAesKey,
+            iv: encryptionResponse.IV,
+            encryptedData: encryptionResponse.EncryptedData,
+          }),
         },
-        body: JSON.stringify({
-          encryptedAesKey: encryptionResponse.EncryptedAesKey,
-          iv: encryptionResponse.IV,
-          encryptedData: encryptionResponse.EncryptedData,
-        }),
-      });
+        refreshAccessToken
+      );
 
       //THEM POP UP NOTIFICATION
       setShowDialog(false);
@@ -272,12 +275,14 @@ export const ViewAssets = ({
   const handleBurn = () => {
     createBuilder();
     setShowDialog(true);
+    refetch();
+    fetchValidMintedAssets();
   };
 
   const refreshAccessToken = async (refreshToken: string) => {
     try {
       const response = await fetch(
-        'https://seahorse-magnetic-officially.ngrok.app/api/animal-go/auth/refresh-token',
+        `${gameServerUrl}/api/animal-go/auth/refresh-token`,
         {
           method: 'POST',
           headers: {
@@ -300,37 +305,13 @@ export const ViewAssets = ({
   };
 
   const fetchValidMintedAssets = async () => {
-    let accessToken = localStorage.getItem('accessToken');
-    const refreshToken = localStorage.getItem('refreshToken');
     try {
-      if (!accessToken) {
-        throw new Error('No authentication token available');
-      }
-      let response = await fetch(
+      const response = await fetchWithTokenRefresh(
         `${gameServerUrl}/api/animal-go/crypto/entity-minted`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
-        }
+        {},
+        refreshAccessToken
       );
 
-      // Nếu accessToken hết hạn, thử refresh
-      if (response.status === 400 && refreshToken) {
-        try {
-          accessToken = await refreshAccessToken(refreshToken);
-          // Thử lại với accessToken mới
-          response = await fetch(`${gameServerUrl}`, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-          });
-        } catch (refreshErr) {
-          throw new Error('Failed to refresh access token');
-        }
-      }
       if (!response.ok) {
         throw new Error('Failed to fetch assets');
       }
@@ -457,6 +438,7 @@ export const ViewAssets = ({
                     onChange={e => {
                       setCollectionId(e.target.value);
                     }}
+                    defaultValue={assetControlled[0]}
                   >
                     <option value="">Select Item Type</option>
                     {collections?.length > 0 &&
@@ -519,7 +501,20 @@ export const ViewAssets = ({
                               'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
                           }}
                         >
-                          <div className="asset-image flex-col">
+                          <div
+                            className="asset-image flex-col"
+                            style={{
+                              width: '100%',
+                              height: '200px',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              backgroundImage:
+                                "url('/images/black-market/BG.png')",
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
                             <img
                               src={
                                 asset?.metadata?.properties?.image ||
@@ -613,6 +608,8 @@ export const ViewAssets = ({
                   showDialog={showDialog}
                   setShowDialog={setShowDialog}
                   setTokenId={setTokenId}
+                  feeAssetId={feeAssetId}
+                  setFeeAssetId={setFeeAssetId}
                   tokenId={tokenId}
                   quantity={quantity}
                   setQuantity={setQuantity}

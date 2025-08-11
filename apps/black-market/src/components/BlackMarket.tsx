@@ -42,7 +42,6 @@ export default function BlackMarket() {
     <div className="flex flex-col items-center justify-center w-full">
       <img src="/images/black-market/HeroBanner.png" alt="HeroBanner" />
 
-      {/* <div className="grid grid-flow-col grid-cols-2 gap-4 w-full"> */}
       <div
         className="flex inventory-container"
         style={{

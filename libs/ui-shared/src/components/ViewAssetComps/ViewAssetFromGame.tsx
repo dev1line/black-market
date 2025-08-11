@@ -5,6 +5,7 @@ import ConfirmModal from '../ComfirmModal';
 import { TokenEncryption } from '../../crypto/encryption';
 import Spinner from '../Spinner';
 import NotificationModal from '../NotificationModal';
+import { withTokenRefresh } from '../../helpers';
 
 export const EItemStatTypes = [
   'Attack',
@@ -74,7 +75,8 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
 
   const [showDialog, setShowDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<any | null>();
-  const [itemType, setItemType] = useState<string>('equipment');
+  const [itemType, setItemType] = useState<string>('character');
+  const [feeAssetId, setFeeAssetId] = useState<number>(1);
   const [assets, setAssets] = useState<{
     character: any[];
     equipment: any[];
@@ -90,7 +92,7 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
   const refreshAccessToken = async (refreshToken: string) => {
     try {
       const response = await fetch(
-        'https://seahorse-magnetic-officially.ngrok.app/api/animal-go/auth/refresh-token',
+        `${gameServerUrl}/api/animal-go/auth/refresh-token`,
         {
           method: 'POST',
           headers: {
@@ -115,46 +117,51 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
   const fetchAssets = async () => {
     // setFetchDataError(null);
     setIsLoading(true);
-    let accessToken = localStorage.getItem('accessToken');
     const refreshToken = localStorage.getItem('refreshToken');
+
     try {
-      if (!accessToken) {
-        throw new Error('No authentication token available');
+      if (!refreshToken) {
+        throw new Error('No refresh token available');
       }
-      let response = await fetch(
-        `${gameServerUrl}/api/animal-go/crypto/equipment-character-mint`,
+
+      const response = await withTokenRefresh(
+        async (accessToken: string) => {
+          const response = await fetch(
+            `${gameServerUrl}/api/animal-go/crypto/equipment-character-mint`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+            }
+          );
+
+          if (!response.ok) {
+            const error: any = new Error('Request failed');
+            error.status = response.status;
+            error.response = response;
+            throw error;
+          }
+
+          return response;
+        },
+        refreshAccessToken,
         {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-          },
+          refreshToken,
+          // onTokenRefreshed: newAccessToken => {
+          //   // Token was refreshed successfully
+          //   console.log('Access token refreshed');
+          // },
         }
       );
 
-      // Nếu accessToken hết hạn, thử refresh
-      if (response.status === 400 && refreshToken) {
-        try {
-          accessToken = await refreshAccessToken(refreshToken);
-          // Thử lại với accessToken mới
-          response = await fetch(`${gameServerUrl}`, {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              'Content-Type': 'application/json',
-            },
-          });
-        } catch (refreshErr) {
-          throw new Error('Failed to refresh access token');
-        }
-      }
-      if (!response.ok) {
-        throw new Error('Failed to fetch assets');
-      }
       const data = await response.json();
       setAssets(data.data);
     } catch (err) {
       // setFetchDataError(
       //   err instanceof Error ? err.message : 'Failed to fetch assets'
       // );
+      console.error('Error fetching assets:', err);
     } finally {
       setIsLoading(false);
     }
@@ -178,20 +185,54 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
     };
     const encryptionResponse = await encoder.encryptTokenResponse(dataSending);
 
-    const accessToken = localStorage.getItem('accessToken');
-    // call api POST to server localhost: 8080/api/animal-go/nft/mintSft
-    await fetch(`${gameServerUrl}/api/animal-go/crypto/admin-mint`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        encryptedAesKey: encryptionResponse.EncryptedAesKey,
-        iv: encryptionResponse.IV,
-        encryptedData: encryptionResponse.EncryptedData,
-      }),
-    });
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
+    }
+
+    try {
+      await withTokenRefresh(
+        async (accessToken: string) => {
+          const response = await fetch(
+            `${gameServerUrl}/api/animal-go/crypto/admin-mint`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                encryptedAesKey: encryptionResponse.EncryptedAesKey,
+                iv: encryptionResponse.IV,
+                encryptedData: encryptionResponse.EncryptedData,
+              }),
+            }
+          );
+
+          if (!response.ok) {
+            const error: any = new Error('Request failed');
+            error.status = response.status;
+            error.response = response;
+            throw error;
+          }
+
+          return response;
+        },
+        refreshAccessToken,
+        {
+          refreshToken,
+          // onTokenRefreshed: newAccessToken => {
+          //   console.log('Access token refreshed for admin mint');
+          // },
+        }
+      );
+
+      // Refresh assets after successful mint
+      fetchAssets();
+    } catch (err) {
+      console.error('Error creating NFT:', err);
+      throw err;
+    }
   };
 
   const handleMint = async () => {
@@ -336,7 +377,20 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
                               'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
                           }}
                         >
-                          <div className="asset-image flex-col">
+                          <div
+                            className="asset-image flex-col"
+                            style={{
+                              width: '100%',
+                              height: '200px',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              backgroundImage:
+                                "url('/images/black-market/BG.png')",
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
                             <img
                               src={
                                 `${baseImgUrl}${asset?.characterConfigId}.png` ||
@@ -422,7 +476,20 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
                               'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
                           }}
                         >
-                          <div className="asset-image flex-col">
+                          <div
+                            className="asset-image flex-col"
+                            style={{
+                              width: '100%',
+                              height: '200px',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              backgroundImage:
+                                "url('/images/black-market/BG.png')",
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
                             <img
                               src={
                                 `${baseImgStoneUrl}${asset?.configId}.png` ||
@@ -508,7 +575,20 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
                               'transform 0.3s cubic-bezier(0.4,0,0.2,1)',
                           }}
                         >
-                          <div className="asset-image flex-col">
+                          <div
+                            className="asset-image flex-col"
+                            style={{
+                              width: '100%',
+                              height: '200px',
+                              borderRadius: '8px',
+                              overflow: 'hidden',
+                              backgroundImage:
+                                "url('/images/black-market/BG.png')",
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
                             <img
                               src={`${baseImgEquipmentUrl}${asset?.icon}`}
                               alt="asset"
@@ -595,6 +675,8 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
                   tokenId={tokenId}
                   quantity={quantity}
                   setQuantity={setQuantity}
+                  feeAssetId={feeAssetId}
+                  setFeeAssetId={setFeeAssetId}
                   callback={handleMint}
                   asset={selectedItem}
                   title="Mint to NFT"

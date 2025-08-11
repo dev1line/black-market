@@ -1,6 +1,9 @@
 {
-  "name": "SDK Demo",
-  "short_name": "SDK Demo",
+  "name": "Black Market - NFT Trading Hub for Animal Go Warriors",
+  "short_name": "Animal Go Black Market",
+  "description": "Where Animal Go warriors can mint NFTs to their wallet, trade NFTs, and burn NFTs back to the game for use. The ultimate NFT trading platform for Animal Go gaming.",
+  "start_url": "/",
+  "scope": "/",
   "icons": [
     {
       "src": "/web-app-manifest-192x192.png",
@@ -15,7 +18,10 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
-  "display": "standalone"
+  "theme_color": "#1a1a1a",
+  "background_color": "#1a1a1a",
+  "display": "standalone",
+  "orientation": "portrait",
+  "categories": ["games", "entertainment", "finance"],
+  "lang": "en"
 }

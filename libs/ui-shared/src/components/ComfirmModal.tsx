@@ -13,6 +13,8 @@ interface ConfirmModalProps {
   setTokenId: (tokenId: number) => void;
   mintTo?: string;
   setMintTo?: (owner: string) => void;
+  feeAssetId: number;
+  setFeeAssetId: (feeAssetId: number) => void;
   asset: any;
   title: string;
   itemType: string;
@@ -29,10 +31,11 @@ export default function ConfirmModal({
   itemType,
   mintTo,
   setMintTo,
+  feeAssetId,
+  setFeeAssetId,
 }: ConfirmModalProps) {
   const { userSession } = useAuth();
   return (
-    // gas &&
     showDialog && (
       <Dialog>
         <Dialog.Container>
@@ -633,6 +636,45 @@ export default function ConfirmModal({
                             style={{ marginTop: '4px' }}
                             readOnly
                           />
+                        </label>
+
+                        <label>
+                          <span
+                            style={{
+                              color: '#fff',
+                              fontWeight: 'bold',
+                              textAlign: 'center',
+                              width: '100%',
+                              textShadow:
+                                '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+                            }}
+                          >
+                            Fee Asset ID
+                          </span>
+                          <div className="relative">
+                            <select
+                              value={feeAssetId}
+                              className="w-full builder-input"
+                              style={{
+                                marginTop: '4px',
+                                paddingLeft: '40px',
+                                backgroundImage: `url(${
+                                  feeAssetId === 1
+                                    ? '/images/black-market/ROOT.png'
+                                    : '/images/black-market/XRP.png'
+                                })`,
+                                backgroundRepeat: 'no-repeat',
+                                backgroundPosition: '8px center',
+                                backgroundSize: '24px 24px',
+                              }}
+                              onChange={e => {
+                                setFeeAssetId(parseInt(e.target.value));
+                              }}
+                            >
+                              <option value={1}>ROOT</option>
+                              <option value={2}>XRP</option>
+                            </select>
+                          </div>
                         </label>
                       </div>
                     )}

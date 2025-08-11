@@ -7,7 +7,6 @@ import {
   shortAddress,
   useTransactQuery,
   CopyButton,
-  useShouldShowEoa,
 } from '@fv-sdk-demos/ui-shared';
 import { useAuth, useConnector } from '@futureverse/auth-react';
 import { useTrnApi } from '@futureverse/transact-react';
@@ -37,10 +36,7 @@ export default function Nav({
 export const Menu: React.FC<MenuProps> = () => {
   const { signOut, userSession } = useAuth();
   const { disconnect, isConnected } = useConnector();
-  const shouldShowEoa = useShouldShowEoa();
-  const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>(
-    shouldShowEoa ? 'eoa' : 'fpass'
-  );
+  const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>('fpass');
   const accountToCheck = useMemo(() => {
     if (!userSession) {
       return '';
@@ -256,10 +252,8 @@ export const Menu: React.FC<MenuProps> = () => {
 export const MobileMenu: React.FC<MenuProps> = ({ setIsOpen }) => {
   const { signOut, userSession } = useAuth();
   const { disconnect, isConnected } = useConnector();
-  const shouldShowEoa = useShouldShowEoa();
-  const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>(
-    shouldShowEoa ? 'eoa' : 'fpass'
-  );
+
+  const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>('fpass');
   const accountToCheck = useMemo(() => {
     if (!userSession) {
       return '';
