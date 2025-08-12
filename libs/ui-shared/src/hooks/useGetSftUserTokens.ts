@@ -2,14 +2,16 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTrnApi } from '@futureverse/transact-react';
+import { useEffect } from 'react';
 
 export function useGetSftUserTokens(
   collectionId: number,
-  walletAddress?: string
+  walletAddress?: string,
+  collectionTokens?: number
 ) {
   const { trnApi } = useTrnApi();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['sft-tokens', collectionId, walletAddress],
     queryFn: async () => {
       if (!trnApi) {
@@ -17,18 +19,13 @@ export function useGetSftUserTokens(
         return;
       }
 
-      const sftCollectionInfo = await trnApi.query.sft.sftCollectionInfo(
-        collectionId
-      );
+      // const sftCollectionInfo = await trnApi.query.sft.sftCollectionInfo(
+      //   collectionId
+      // );
+      // const info = sftCollectionInfo.toHuman() as unknown as {
+      //   nextSerialNumber: number;
+      // };
 
-      const info = sftCollectionInfo.toHuman() as unknown as {
-        nextSerialNumber: { toNumber: () => number };
-      };
-
-      console.log('info sft', info);
-
-      const collectionTokens = info?.nextSerialNumber?.toNumber() - 1;
-      console.log('info sft collectionTokens', collectionTokens);
       const tokenInfo = collectionTokens
         ? await Promise.all(
             Array.from([...new Array(collectionTokens)]).map(
@@ -67,11 +64,21 @@ export function useGetSftUserTokens(
             )
           )
         : [];
-      console.log('tokenInfo sft', tokenInfo);
 
       return tokenInfo ?? null;
     },
-    enabled: !!trnApi && !!collectionId,
-    // refetchInterval: 30000,
+    enabled: !!trnApi && !!collectionId && !!walletAddress,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true,
+    staleTime: 0, // Luôn coi data là stale để refetch khi cần
   });
+
+  // Refetch khi walletAddress thay đổi
+  useEffect(() => {
+    if (walletAddress && query.isSuccess) {
+      query.refetch();
+    }
+  }, [walletAddress, query]);
+
+  return query;
 }

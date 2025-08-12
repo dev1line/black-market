@@ -7,7 +7,7 @@ import React, { useCallback, useState, useEffect } from 'react';
 import ConfirmModal from '../ComfirmModal';
 import { useTrnApi } from '@futureverse/transact-react';
 import { ExtrinsicResult, TransactionBuilder } from '@futureverse/transact';
-import { useGetExtrinsic } from '../../hooks';
+import { useGetExtrinsic, useGetSftUserTokens } from '../../hooks';
 import { useRootStore } from '../../hooks/useRootStore';
 import { TokenEncryption } from '../../crypto/encryption';
 import { fetchWithTokenRefresh } from '../../helpers';
@@ -79,6 +79,11 @@ export const ViewAssets = ({
   const [validMintedAssets, setValidMintedAssets] = useState<string[]>([]);
 
   const [fromWallet, setFromWallet] = useState<'eoa' | 'fpass'>('fpass');
+  const { data: collectionTokens } = useGetSftUserTokens(
+    parseInt(collectionId?.split(':')[2] ?? '0'),
+    walletsToUse[0] ?? '',
+    assetControlled.length ?? 3
+  );
 
   // Custom checkbox styles
   const checkboxStyles = {
@@ -190,9 +195,7 @@ export const ViewAssets = ({
           ).burn({
             serialNumber: Number(selectedItem?.tokenId) ?? 0,
           });
-    console.log('nft', nft);
     if (fromWallet === 'fpass') {
-      console.log(' fpass feeAssetId', feeAssetId);
       if (feeAssetId === 2) {
         await nft.addFuturePass(userSession.futurepass);
       }
@@ -252,6 +255,11 @@ export const ViewAssets = ({
 
       //THEM POP UP NOTIFICATION
       setShowDialog(false);
+
+      // Trigger refetch for ViewAssetsFromGame after successful burn
+      // We'll use a custom event to communicate between components
+
+      window.dispatchEvent(new CustomEvent('viewAssetsBurnSuccess'));
     };
 
     setResultCallback && setResultCallback(callBackHandler);
@@ -293,10 +301,14 @@ export const ViewAssets = ({
       );
       if (!response.ok) throw new Error('Failed to refresh token');
       const data = await response.json();
-      if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        return data.accessToken;
+
+      if (data?.data?.accessToken) {
+        localStorage.setItem('accessToken', data?.data?.accessToken);
+        localStorage.setItem('refreshToken', data?.data?.refreshToken);
+        return {
+          accessToken: data?.data?.accessToken ?? '',
+          refreshToken: data?.data?.refreshToken ?? '',
+        };
       }
       throw new Error('No accessToken in response');
     } catch (err) {
@@ -329,6 +341,23 @@ export const ViewAssets = ({
   useEffect(() => {
     fetchValidMintedAssets();
   }, [collectionId]);
+
+  // Listen for mint success event from ViewAssetsFromGame
+  useEffect(() => {
+    const handleMintSuccess = () => {
+      refetch();
+      fetchValidMintedAssets();
+    };
+
+    window.addEventListener('viewAssetsFromGameMintSuccess', handleMintSuccess);
+
+    return () => {
+      window.removeEventListener(
+        'viewAssetsFromGameMintSuccess',
+        handleMintSuccess
+      );
+    };
+  }, [refetch]);
 
   return (
     <div className="w-full inventory-card">
@@ -438,9 +467,8 @@ export const ViewAssets = ({
                     onChange={e => {
                       setCollectionId(e.target.value);
                     }}
-                    defaultValue={assetControlled[0]}
                   >
-                    <option value="">Select Item Type</option>
+                    <option value="">Select Collection</option>
                     {collections?.length > 0 &&
                       collections
                         .filter(collection =>
@@ -485,6 +513,17 @@ export const ViewAssets = ({
                           asset?.metadata?.attributes?.mintId
                         ) || asset?.assetType === 'ERC1155'
                     )
+                    .filter(asset => {
+                      const record = collectionTokens?.find(
+                        token =>
+                          token.id.toString() === asset.tokenId.toString()
+                      );
+
+                      return (
+                        record?.freeBalance !== '0' &&
+                        record?.freeBalance !== null
+                      );
+                    })
                     .sort((a, b) =>
                       parseInt(a.tokenId) < parseInt(b.tokenId) ? -1 : 1
                     )

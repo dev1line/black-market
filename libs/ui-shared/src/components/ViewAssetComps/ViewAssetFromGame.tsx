@@ -103,10 +103,14 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
       );
       if (!response.ok) throw new Error('Failed to refresh token');
       const data = await response.json();
-      if (data.accessToken) {
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        return data.accessToken;
+
+      if (data?.data?.accessToken) {
+        localStorage.setItem('accessToken', data?.data?.accessToken);
+        localStorage.setItem('refreshToken', data?.data?.refreshToken);
+        return {
+          accessToken: data?.data?.accessToken ?? '',
+          refreshToken: data?.data?.refreshToken ?? '',
+        };
       }
       throw new Error('No accessToken in response');
     } catch (err) {
@@ -241,10 +245,26 @@ export const ViewAssetsFromGame = ({ publicKey, gameServerUrl }: IProps) => {
       await createNFTBYAdmin();
       // view Notification Modal
       setShowNotification(true);
+
+      // Trigger refetch for ViewAssets after successful mint
+      window.dispatchEvent(new CustomEvent('viewAssetsFromGameMintSuccess'));
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Listen for burn success event from ViewAssets
+  useEffect(() => {
+    const handleBurnSuccess = () => {
+      fetchAssets();
+    };
+
+    window.addEventListener('viewAssetsBurnSuccess', handleBurnSuccess);
+
+    return () => {
+      window.removeEventListener('viewAssetsBurnSuccess', handleBurnSuccess);
+    };
+  }, []);
 
   return (
     <div className="w-full inventory-card">

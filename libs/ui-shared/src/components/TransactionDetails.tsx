@@ -81,6 +81,8 @@ export default function TransactionDetails() {
 
   const handleClose = useCallback(() => {
     resetState();
+    window.dispatchEvent(new CustomEvent('viewAssetsBurnSuccess'));
+    window.dispatchEvent(new CustomEvent('viewAssetsFromGameMintSuccess'));
   }, [resetState]);
 
   return (
@@ -165,7 +167,18 @@ export default function TransactionDetails() {
                               borderRadius: '16px',
                             }}
                           >
-                            Sign & Send
+                            <span
+                              style={{
+                                color: '#fff',
+                                fontWeight: 'bold',
+                                textAlign: 'center',
+                                width: '100%',
+                                textShadow:
+                                  '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+                              }}
+                            >
+                              <h2> Sign & Send</h2>
+                            </span>
                           </button>
                         )}
                       </>
@@ -205,7 +218,18 @@ export default function TransactionDetails() {
                 )}
                 {result && (
                   <>
-                    <h2>Transaction Result</h2>
+                    <span
+                      style={{
+                        color: '#fff',
+                        fontWeight: 'bold',
+                        textAlign: 'center',
+                        width: '100%',
+                        textShadow:
+                          '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+                      }}
+                    >
+                      <h2>Transaction Result</h2>
+                    </span>
 
                     <div className="grid cols-1">
                       <pre>
@@ -218,13 +242,40 @@ export default function TransactionDetails() {
                         rel="noreferrer noopener"
                         style={{ textDecoration: 'underline' }}
                       >
-                        View Extrinsic on Explorer ({result.extrinsicId})
+                        <span
+                          style={{
+                            color: '#fff',
+                            fontWeight: '500',
+                            textAlign: 'center',
+                            width: '100%',
+                            textShadow:
+                              '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+                          }}
+                        >
+                          View Extrinsic on Explorer ({result.extrinsicId})
+                        </span>
                       </a>
                       <button
                         className="builder-input green"
                         onClick={handleClose}
+                        style={{
+                          backgroundColor: '#8ACA33',
+                          borderRadius: '16px',
+                          cursor: 'pointer',
+                        }}
                       >
-                        Close
+                        <span
+                          style={{
+                            color: '#fff',
+                            fontWeight: 'bold',
+                            textAlign: 'center',
+                            width: '100%',
+                            textShadow:
+                              '-1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000',
+                          }}
+                        >
+                          <h2>Close</h2>
+                        </span>
                       </button>
                     </div>
                   </>

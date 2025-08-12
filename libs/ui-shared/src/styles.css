@@ -2,8 +2,8 @@
   --body: #f6f0f0;
   --bodyText: #101011;
   --white: #f6f0f0;
-  --cta: #101011;
-  --cta-hover: #101011b0;
+  --cta: rgb(40 61 11 / 80%);
+  --cta-hover: rgb(138 202 51 / 0.8);
   --grey: #e7e7e7;
   --input-grey: #d1d2d7;
   --input-text: #101011;
@@ -626,9 +626,9 @@ input[readonly]:focus {
 
 .sdk-demo-dialog-content .card .inner {
   background-color: var(--cta);
-  /* max-height: 80vh;
-  max-height: 80dvh; */
-  height: auto;
+  max-height: 90vh;
+  max-height: 90dvh;
+  /* height: auto; */
 }
 
 .sdk-demo-dialog-content .card .inner .raw-button {
@@ -966,7 +966,7 @@ input[type='range']::-ms-thumb {
   align-items: center;
   /* margin-bottom: 16px; */
   padding: 0 8px;
-  background: var(--header-grey);
+  background: #ece5cb;
   color: var(--header-text);
   border-radius: 10px;
   position: fixed;

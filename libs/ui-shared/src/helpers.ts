@@ -38,7 +38,9 @@ export const ASSET_DECIMALS: Record<number, number> = {
  */
 export const withTokenRefresh = async <T>(
   apiCall: (accessToken: string) => Promise<T>,
-  refreshTokenFn: (refreshToken: string) => Promise<string>,
+  refreshTokenFn: (
+    refreshToken: string
+  ) => Promise<{ accessToken: string; refreshToken: string }>,
   options: {
     refreshToken: string;
     onTokenRefreshed?: (newAccessToken: string) => void;
@@ -65,11 +67,12 @@ export const withTokenRefresh = async <T>(
       ) {
         try {
           // Try to refresh the token
-          const newAccessToken = await refreshTokenFn(options.refreshToken);
+          const { accessToken: newAccessToken, refreshToken: newRefreshToken } =
+            await refreshTokenFn(options.refreshToken);
 
           // Store the new token
           localStorage.setItem('accessToken', newAccessToken);
-
+          localStorage.setItem('refreshToken', newRefreshToken);
           // Call the callback if provided
           if (options.onTokenRefreshed) {
             options.onTokenRefreshed(newAccessToken);
@@ -100,7 +103,9 @@ export const withTokenRefresh = async <T>(
 export const fetchWithTokenRefresh = async (
   url: string,
   options: RequestInit = {},
-  refreshTokenFn: (refreshToken: string) => Promise<string>
+  refreshTokenFn: (
+    refreshToken: string
+  ) => Promise<{ accessToken: string; refreshToken: string }>
 ): Promise<Response> => {
   return withTokenRefresh(
     async (accessToken: string) => {

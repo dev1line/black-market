@@ -516,7 +516,12 @@ export default function ConfirmModal({
                             }}
                           >
                             Quantity :{' '}
-                            <span style={{ color: 'green' }}>
+                            <span
+                              style={{ color: 'green', cursor: 'pointer' }}
+                              onClick={() => {
+                                setQuantity(asset?.amount);
+                              }}
+                            >
                               MAX {asset?.amount}
                             </span>
                           </span>
@@ -572,7 +577,14 @@ export default function ConfirmModal({
                               }}
                             >
                               Quantity{' '}
-                              <span style={{ color: 'green' }}>
+                              <span
+                                style={{ color: 'green', cursor: 'pointer' }}
+                                onClick={() => {
+                                  setQuantity(
+                                    asset?.ownership?.balancesOf?.[0]?.balance
+                                  );
+                                }}
+                              >
                                 MAX {asset?.ownership?.balancesOf?.[0]?.balance}
                               </span>
                             </span>
