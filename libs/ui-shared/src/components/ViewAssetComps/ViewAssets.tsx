@@ -520,8 +520,9 @@ export const ViewAssets = ({
                       );
 
                       return (
-                        record?.freeBalance !== '0' &&
-                        record?.freeBalance !== null
+                        (record?.freeBalance !== '0' &&
+                          record?.freeBalance !== null) ||
+                        asset?.assetType === 'ERC721'
                       );
                     })
                     .sort((a, b) =>

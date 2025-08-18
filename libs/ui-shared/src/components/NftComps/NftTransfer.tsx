@@ -401,7 +401,7 @@ export default function NftTransfer() {
         <div className="row">
           <SendFrom
             label="Transfer From"
-            shouldShowEoa={shouldShowEoa}
+            // shouldShowEoa={shouldShowEoa}
             setFromWallet={setFromWallet}
             fromWallet={fromWallet}
             resetState={resetState}
