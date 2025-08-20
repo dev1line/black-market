@@ -6,16 +6,17 @@
     "start": "npx nx serve black-market",
     "build": "npx nx build black-market",
     "preview": "npx nx preview black-market",
-    "build:prod": "NODE_ENV=production npx nx build black-market"
+    "build:prod": "NODE_ENV=production npx nx build black-market",
+    "clean": "npx nx reset"
   },
   "private": true,
   "dependencies": {
     "@ensdomains/ensjs": "^4.0.1-alpha.0",
-    "@futureverse/asset-register": "latest",
-    "@futureverse/asset-register-react": "latest",
+    "@futureverse/asset-register": "2.62.0-beta.0",
+    "@futureverse/asset-register-react": "2.71.1",
     "@futureverse/auth": "^4.4.0",
-    "@futureverse/auth-react": "latest",
-    "@futureverse/auth-ui": "latest",
+    "@futureverse/auth-react": "4.4.0",
+    "@futureverse/auth-ui": "4.4.0",
     "@futureverse/signer": "^1.8.0",
     "@futureverse/transact": "^0.7.2",
     "@futureverse/transact-react": "^0.3.4",
