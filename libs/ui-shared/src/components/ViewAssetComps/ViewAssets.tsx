@@ -7,15 +7,24 @@ import React, { useCallback, useState, useEffect } from 'react';
 import ConfirmModal from '../ComfirmModal';
 import { useTrnApi } from '@futureverse/transact-react';
 import { ExtrinsicResult, TransactionBuilder } from '@futureverse/transact';
-import { useGetExtrinsic, useGetSftUserTokens } from '../../hooks';
+import {
+  useGetExtrinsic,
+  useGetSftUserTokens,
+  useGetTokens,
+} from '../../hooks';
 import { useRootStore } from '../../hooks/useRootStore';
 import { TokenEncryption } from '../../crypto/encryption';
 import { fetchWithTokenRefresh } from '../../helpers';
 
 interface StatsDisplayProps {
-  stats: {
+  stats?: {
     [key: string]: string | number;
   };
+  statsArray?: {
+    trait_type: string;
+    value: string | number;
+  }[];
+  type: 'object' | 'array';
 }
 
 interface IProps {
@@ -24,8 +33,30 @@ interface IProps {
   assetControlled: string[];
 }
 
-export const StatsDisplay: React.FC<StatsDisplayProps> = ({ stats }) => {
+export const StatsDisplay: React.FC<StatsDisplayProps> = ({
+  stats,
+  statsArray,
+  type = 'object',
+}) => {
+  if (type === 'array') {
+    return (
+      <div className="stats-container">
+        {statsArray?.map((stat, index) => (
+          <div key={index} className="stat-item">
+            <div className="stat-key" title={stat.trait_type}>
+              {stat.trait_type}
+            </div>
+            <div className="stat-value" title={String(stat.value)}>
+              {stat.value}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   if (stats && Object.keys(stats).length === 0) return null;
+
   return (
     <div className="stats-container">
       {stats &&
@@ -138,6 +169,14 @@ export const ViewAssets = ({
     [walletsToUse, collectionId]
   );
 
+  const { data: tokens } = useGetTokens(
+    walletsToUse[0],
+    parseInt(collectionId?.split(':')[2] ?? '0'),
+    parseInt(collectionId?.split(':')[2] ?? '0') === Number(assetControlled[2])
+      ? 'ERC1155'
+      : 'ERC721'
+  );
+
   const { collections } = useCollections(collectionQueryParams, {
     enabled: !!userSession,
     refetchOnWindowFocus: false,
@@ -224,13 +263,13 @@ export const ViewAssets = ({
         console.log('result.result.isError', result.result.isError);
         return;
       }
-      const mintId = selectedItem?.metadata?.attributes?.mintId;
-      const entityType = selectedItem?.metadata?.attributes?.entityType;
+      const mintId = selectedItem?.attributes?.mintId ?? '';
+      const entityType = selectedItem?.attributes?.entityType ?? '';
 
       const burnData = {
         mintId:
           selectedItem.assetType === 'ERC1155'
-            ? selectedItem?.metadata?.attributes?.configId
+            ? selectedItem?.attributes?.configId
             : mintId,
         walletAddress: walletsToUse[0],
         entityType,
@@ -497,7 +536,7 @@ export const ViewAssets = ({
                 overflowY: 'auto',
               }}
             >
-              {assets?.length == 0 ? (
+              {tokens?.tokenInfos?.length == 0 ? (
                 <img
                   src="/images/black-market/EmptyWithText.png"
                   style={{
@@ -506,13 +545,13 @@ export const ViewAssets = ({
                 />
               ) : (
                 <div className="row asset-row asset-selector-card">
-                  {assets
-                    .filter(
-                      asset =>
-                        validMintedAssets.includes(
-                          asset?.metadata?.attributes?.mintId
-                        ) || asset?.assetType === 'ERC1155'
-                    )
+                  {tokens?.tokenInfos
+                    // .filter(
+                    //   asset =>
+                    //     validMintedAssets.includes(
+                    //       asset?.metadata?.attributes?.mintId
+                    //     ) || asset?.assetType === 'ERC1155'
+                    // )
                     .filter(asset => {
                       const record = collectionTokens?.find(
                         token =>
@@ -557,8 +596,7 @@ export const ViewAssets = ({
                           >
                             <img
                               src={
-                                asset?.metadata?.properties?.image ||
-                                '/images/black-market/BG.png'
+                                asset?.image || '/images/black-market/BG.png'
                               }
                               alt="asset"
                               onError={e => {
@@ -589,7 +627,7 @@ export const ViewAssets = ({
                             <div className="asset-token-id flex-col">
                               <div className="title">Token ID:</div>
                               <div className="value">
-                                {asset.tokenId || '-'}
+                                {asset.tokenId != null ? asset.tokenId : '-'}
                               </div>
                             </div>
                           </div>
@@ -603,13 +641,13 @@ export const ViewAssets = ({
                             <div className="asset-collection-id flex-col">
                               <div className="title">Quantity:</div>
                               <div className="value">
-                                {asset.ownership?.balancesOf?.[0]?.balance ||
-                                  '-'}
+                                {asset.quantity || '-'}
                               </div>
                             </div>
                           )}
                           <StatsDisplay
-                            stats={asset?.metadata?.attributes || {}}
+                            stats={asset?.attributes || {}}
+                            type="object"
                           />
 
                           <div

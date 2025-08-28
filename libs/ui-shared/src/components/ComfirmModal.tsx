@@ -580,25 +580,22 @@ export default function ConfirmModal({
                               <span
                                 style={{ color: 'green', cursor: 'pointer' }}
                                 onClick={() => {
-                                  setQuantity(
-                                    asset?.ownership?.balancesOf?.[0]?.balance
-                                  );
+                                  setQuantity(asset?.quantity);
                                 }}
                               >
-                                MAX {asset?.ownership?.balancesOf?.[0]?.balance}
+                                MAX {asset?.quantity}
                               </span>
                             </span>
                             <input
                               type="number"
                               min={1}
-                              max={asset?.ownership?.balancesOf?.[0]?.balance}
+                              max={asset?.quantity}
                               value={quantity}
                               className="w-full builder-input"
                               style={{ marginTop: '4px' }}
                               onChange={e => {
                                 if (
-                                  parseInt(e.target.value) >
-                                  asset?.ownership?.balancesOf?.[0]?.balance
+                                  parseInt(e.target.value) > asset?.quantity
                                 ) {
                                   e.target.value = asset?.amount.toString();
                                 }
@@ -643,7 +640,7 @@ export default function ConfirmModal({
                           </span>
                           <input
                             type="number"
-                            value={asset?.rawData?.collection?.location}
+                            value={asset?.collectionId}
                             className="w-full builder-input"
                             style={{ marginTop: '4px' }}
                             readOnly
