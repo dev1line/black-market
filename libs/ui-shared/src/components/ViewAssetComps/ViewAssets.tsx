@@ -1,7 +1,4 @@
-import {
-  useAssets,
-  useCollections,
-} from '@futureverse/asset-register-react/v2';
+import { useCollections } from '@futureverse/asset-register-react/v2';
 import { useAuth, useFutureverseSigner } from '@futureverse/auth-react';
 import React, { useCallback, useState, useEffect } from 'react';
 import ConfirmModal from '../ComfirmModal';
@@ -10,7 +7,7 @@ import { ExtrinsicResult, TransactionBuilder } from '@futureverse/transact';
 import {
   useGetExtrinsic,
   useGetSftUserTokens,
-  useGetTokens,
+  useGetTokensWithData,
 } from '../../hooks';
 import { useRootStore } from '../../hooks/useRootStore';
 import { TokenEncryption } from '../../crypto/encryption';
@@ -160,16 +157,23 @@ export const ViewAssets = ({
     [walletsToUse]
   );
 
-  const assetQueryParams = React.useMemo(
-    () => ({
-      first: 20,
-      addresses: walletsToUse,
-      collectionIds: [collectionId],
-    }),
-    [walletsToUse, collectionId]
-  );
+  // const assetQueryParams = React.useMemo(
+  //   () => ({
+  //     first: 20,
+  //     addresses: walletsToUse,
+  //     collectionIds: [collectionId],
+  //   }),
+  //   [walletsToUse, collectionId]
+  // );
 
-  const { data: tokens } = useGetTokens(
+  const {
+    data: tokens,
+    hasNextPage,
+    fetchNextPage,
+    isFetching,
+    error,
+    refetch,
+  } = useGetTokensWithData(
     walletsToUse[0],
     parseInt(collectionId?.split(':')[2] ?? '0'),
     parseInt(collectionId?.split(':')[2] ?? '0') === Number(assetControlled[2])
@@ -182,13 +186,13 @@ export const ViewAssets = ({
     refetchOnWindowFocus: false,
   } as any);
 
-  const {
-    assets,
-    reactQuery: { hasNextPage, fetchNextPage, isFetching, error, refetch },
-  } = useAssets(assetQueryParams, {
-    enabled: !!collectionId && !!userSession,
-    refetchOnWindowFocus: false,
-  } as any);
+  // const {
+  //   // assets,
+  //   reactQuery: { hasNextPage, fetchNextPage, isFetching, error, refetch },
+  // } = useAssets(assetQueryParams, {
+  //   enabled: !!collectionId && !!userSession,
+  //   refetchOnWindowFocus: false,
+  // } as any);
 
   const createBuilder = useCallback(async () => {
     if (!trnApi || !signer || !userSession) {
@@ -536,7 +540,7 @@ export const ViewAssets = ({
                 overflowY: 'auto',
               }}
             >
-              {tokens?.tokenInfos?.length == 0 ? (
+              {tokens?.length == 0 ? (
                 <img
                   src="/images/black-market/EmptyWithText.png"
                   style={{
@@ -545,13 +549,13 @@ export const ViewAssets = ({
                 />
               ) : (
                 <div className="row asset-row asset-selector-card">
-                  {tokens?.tokenInfos
-                    // .filter(
-                    //   asset =>
-                    //     validMintedAssets.includes(
-                    //       asset?.metadata?.attributes?.mintId
-                    //     ) || asset?.assetType === 'ERC1155'
-                    // )
+                  {tokens
+                    ?.filter(
+                      asset =>
+                        validMintedAssets.includes(
+                          asset?.metadata?.attributes?.mintId
+                        ) || asset?.assetType === 'ERC1155'
+                    )
                     .filter(asset => {
                       const record = collectionTokens?.find(
                         token =>
@@ -567,9 +571,9 @@ export const ViewAssets = ({
                     .sort((a, b) =>
                       parseInt(a.tokenId) < parseInt(b.tokenId) ? -1 : 1
                     )
-                    .map(asset => (
+                    .map((asset, index) => (
                       <div
-                        key={asset.id}
+                        key={`${asset.id}-${index}`}
                         className="asset-card group"
                         style={{ position: 'relative' }}
                       >

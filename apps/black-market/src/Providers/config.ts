@@ -1,6 +1,5 @@
 import { createWagmiConfig } from '@futureverse/wagmi-connectors';
 import { FutureverseAuthClient } from '@futureverse/auth-react/auth';
-import { polygonAmoy, sepolia, mainnet } from 'viem/chains';
 import { QueryClient } from '@tanstack/react-query';
 import { cookieStorage, createStorage } from 'wagmi';
 import { porcini, root } from '@futureverse/auth';
@@ -25,7 +24,7 @@ export const getWagmiConfig = async () => {
     // xamanAPIKey,
     authClient,
     ssr: true,
-    chains: [mainnet, root, porcini, sepolia, polygonAmoy],
+    chains: [root, porcini],
     storage: createStorage({
       storage: cookieStorage,
     }),

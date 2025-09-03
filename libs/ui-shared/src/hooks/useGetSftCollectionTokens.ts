@@ -2,6 +2,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { useTrnApi } from '@futureverse/transact-react';
+import { useEffect } from 'react';
 
 export function useGetSftCollectionTokens(
   collectionId: number,
@@ -9,7 +10,7 @@ export function useGetSftCollectionTokens(
 ) {
   const { trnApi } = useTrnApi();
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['sft-tokens', collectionId, walletAddress],
     queryFn: async () => {
       if (!trnApi) {
@@ -21,13 +22,9 @@ export function useGetSftCollectionTokens(
         collectionId
       );
 
-      console.log('sftCollectionInfo', sftCollectionInfo.toHuman());
-
       const info = sftCollectionInfo.toHuman() as unknown as {
         nextSerialNumber: { toNumber: () => number };
       };
-
-      console.log('info', info);
 
       const collectionTokens = info?.nextSerialNumber?.toNumber() - 1;
 
@@ -75,4 +72,12 @@ export function useGetSftCollectionTokens(
     enabled: !!trnApi && !!collectionId,
     // refetchInterval: 30000,
   });
+
+  useEffect(() => {
+    if (walletAddress) {
+      query.refetch();
+    }
+  }, [walletAddress]);
+
+  return query;
 }

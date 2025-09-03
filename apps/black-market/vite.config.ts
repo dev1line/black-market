@@ -10,15 +10,15 @@ export default defineConfig({
 
   server: {
     port: 4200,
-    host: 'localhost',
-    allowedHosts: process.env.VITE_ALLOWED_HOSTS
-      ? process.env.VITE_ALLOWED_HOSTS.split(',')
-      : [],
+    // host: process.env.VITE_ALLOWED_HOSTS
+    //   ? 'fast-feline-grand.ngrok-free.app'
+    //   : '127.0.0.1',
+    allowedHosts: ['fast-feline-grand.ngrok-free.app'],
   },
 
   preview: {
     port: 4300,
-    host: 'localhost',
+    host: '127.0.0.1',
   },
 
   plugins: [react(), nxViteTsPaths()],

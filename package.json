@@ -16,7 +16,7 @@
     "@futureverse/asset-register-react": "2.71.1",
     "@futureverse/auth": "^4.4.0",
     "@futureverse/auth-react": "4.4.0",
-    "@futureverse/auth-ui": "4.4.0",
+    "@futureverse/auth-ui": "0.17.0",
     "@futureverse/signer": "^1.8.0",
     "@futureverse/transact": "^0.7.2",
     "@futureverse/transact-react": "^0.3.4",
@@ -110,6 +110,7 @@
   },
   "nx": {},
   "resolutions": {
-    "@polkadot/api": "10.13.1"
+    "@polkadot/api": "10.13.1",
+    "@wagmi/core": "2.20.3"
   }
 }

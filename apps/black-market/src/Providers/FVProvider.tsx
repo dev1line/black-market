@@ -26,7 +26,7 @@ const customThemeConfig: ThemeConfig = {
   },
 };
 
-const network = (process.env.NEXT_PUBLIC_NETWORK ?? 'porcini') as
+const network = (process.env.VITE_PUBLIC_NETWORK ?? 'root') as
   | NetworkName
   | undefined;
 

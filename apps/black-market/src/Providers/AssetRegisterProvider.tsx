@@ -5,7 +5,8 @@ import { useFutureverseSigner } from '@futureverse/auth-react';
 import { ReactNode, useEffect, useMemo, useState } from 'react';
 import { Address } from 'viem';
 
-const url = 'https://ar-api.futureverse.dev/graphql';
+const url =
+  import.meta.env.VITE_AR_API_URL || 'https://ar-api.futureverse.app/graphql';
 
 const ASSET_REGISTRY_DOMAIN =
   typeof window === 'undefined' ? '' : window.location.host;
