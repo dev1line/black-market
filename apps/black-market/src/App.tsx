@@ -1,7 +1,7 @@
 import './App.css';
 import React from 'react';
 import { Routes, Route, Outlet, Link } from 'react-router-dom';
-import { Assets, Header, Nft, Sft, useIsMobile } from '@fv-sdk-demos/ui-shared';
+import { Header, useIsMobile } from '@fv-sdk-demos/ui-shared';
 import Login from './components/Login';
 import Nav, { MobileMenu } from './components/Nav';
 import useIsAuthed from './hooks/useIsAuthed';
@@ -13,9 +13,9 @@ export default function App() {
     <Routes>
       <Route path="/" element={<Layout />}>
         <Route index element={<Welcome />} />
-        <Route path="/transact/assets" element={<Assets />} />
+        {/* <Route path="/transact/assets" element={<Assets />} />
         <Route path="/transact/nft" element={<Nft />} />
-        <Route path="/transact/sft" element={<Sft />} />
+        <Route path="/transact/sft" element={<Sft />} /> */}
         {/* <Route
           index
           element={
